@@ -1,16 +1,19 @@
-import ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
+import os
 
-# Initialize the Ollama client
-client = ollama.Client()
+load_dotenv()
 
-# Define the model and the input prompt
-model = "deepseek-r1:1.5b" # Replace with your model name
-prompt = "What is the capital of France?"
+model = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0,
+    google_api_key=os.getenv("GOOGLE_GEMINI_API_KEY"),
+)
 
-# Send the query to the model
-response = client.generate(model=model, prompt=prompt)
+prompt = "What is 2 + 2?"
 
-# Print the response from the model
-print ("Response from Ollama:")
-print (response. response)
-
+try:
+    response = model.invoke(prompt)
+    print(response.content)
+except Exception as e:
+    print(f"Error: {e}")
