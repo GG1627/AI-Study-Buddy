@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+const API_URL = "https://ai-study-buddy-pnyu.onrender.com/";
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [question, setQuestion] = useState("");
@@ -16,7 +18,7 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/upload-document", {
+      const response = await fetch(`${API_URL}/upload-document`, {
         method: "POST",
         body: formData,
       });
@@ -35,7 +37,7 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:8000/ask-question", {
+      const response = await fetch(`${API_URL}/ask-question`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
