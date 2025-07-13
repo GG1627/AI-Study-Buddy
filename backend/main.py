@@ -3,10 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import PromptTemplate
+from langchain_google_genai import GoogleGenerativeAI
 from vector import retriever
 import json
 import uvicorn
 from process_documents.pdf_processor import extract_text_from_pdf, add_pdf_to_vector_store
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -21,8 +26,14 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# Switch to Google Gemini for production
+model = GoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    temperature=0.0,
+    google_api_key=os.getenv("GOOGLE_GEMINI_API_KEY"),
+    )
 
-model = OllamaLLM(model="llama3.2")
+# model = OllamaLLM(model="llama3.2")
 
 template = """
 You are an expert in answering questions about documents.

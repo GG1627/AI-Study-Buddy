@@ -2,8 +2,12 @@ import PyPDF2
 from langchain_core.documents import Document
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import os
+from dotenv import load_dotenv
 from typing import List
+
+load_dotenv()
 
 def extract_text_from_pdf(pdf_file) -> str:
     """Extract text from uploaded PDF file"""
@@ -31,11 +35,18 @@ def chunk_text(text: str, chunk_size: int = 1000) -> List[str]:
 
 def add_pdf_to_vector_store(pdf_text: str, filename: str):
     """Add PDF content to ChromaDB"""
-    embeddings = OllamaEmbeddings(model="mxbai-embed-large")
+    # embeddings = OllamaEmbeddings(model="mxbai-embed-large")
+
+    # Switch to Google Gemini for production
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/embedding-001",
+        google_api_key=os.getenv("GOOGLE_GEMINI_API_KEY"),
+        dimensions=1024
+    )
     
     # Use the same vector store as your existing setup
     vector_store = Chroma(
-        collection_name="restaurant_reviews",  # Same collection
+        collection_name="documents_gemini",  # Same collection
         embedding_function=embeddings,
         persist_directory="./chroma_langchain_db"
     )

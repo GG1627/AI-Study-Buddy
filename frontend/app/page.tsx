@@ -24,6 +24,7 @@ export default function Home() {
       alert(result.message);
     } catch (error) {
       alert("Upload Failed");
+      console.error("Upload Failed", error);
     } finally {
       setLoading(false);
     }
@@ -45,6 +46,7 @@ export default function Home() {
       setAnswer(result.answer);
     } catch (error) {
       alert("Question failed");
+      console.error("Question failed", error);
     } finally {
       setLoading(false);
     }
