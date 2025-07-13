@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const API_URL = "https://ai-study-buddy-pnyu.onrender.com/";
+const API_URL = "https://ai-study-buddy-pnyu.onrender.com";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
