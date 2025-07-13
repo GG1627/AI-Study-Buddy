@@ -22,7 +22,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://ai-study-buddy-pnyu.onrender.com",
+        "https://ai-study-buddy-front-end.onrender.com",
                    ],
     allow_credentials=True,
     allow_methods=["*"],
