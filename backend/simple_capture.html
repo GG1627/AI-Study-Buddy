@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>📝 iPad Handwriting Capture</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        background: #f0f0f0;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .container {
+        max-width: 100%;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin: 10px 0;
+        font-size: 24px;
+      }
+
+      .instructions {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .status {
+        text-align: center;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .status.ready {
+        background: #e8f5e8;
+        color: #2e7d32;
+      }
+
+      .status.recording {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .canvas-container {
+        border: 3px solid #333;
+        border-radius: 8px;
+        margin: 15px 0;
+        background: white;
+        overflow: hidden;
+      }
+
+      #drawCanvas {
+        display: block;
+        width: 100%;
+        height: 400px;
+        background: white;
+        cursor: crosshair;
+        touch-action: none;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 15px 0;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        min-width: 120px;
+      }
+
+      .start-btn {
+        background: #f44336;
+        color: white;
+      }
+
+      .stop-btn {
+        background: #4caf50;
+        color: white;
+      }
+
+      .clear-btn {
+        background: #ff9800;
+        color: white;
+      }
+
+      .download-btn {
+        background: #2196f3;
+        color: white;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .stats {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📝 iPad Handwriting Capture</h1>
+
+      <div class="instructions">
+        <h3>🎯 Instructions:</h3>
+        <ol>
+          <li><strong>Click "Start Recording"</strong></li>
+          <li>
+            <strong>Write "Hello World"</strong> with your finger or Apple
+            Pencil
+          </li>
+          <li><strong>Click "Stop Recording"</strong></li>
+          <li>
+            <strong>Click "Download"</strong> to save your handwriting data
+          </li>
+        </ol>
+      </div>
+
+      <div class="status ready" id="status">
+        Ready! Click Start Recording to begin.
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="drawCanvas"></canvas>
+      </div>
+
+      <div class="controls">
+        <button class="start-btn" id="startBtn">🔴 Start Recording</button>
+        <button class="stop-btn" id="stopBtn" disabled>
+          ⏹️ Stop Recording
+        </button>
+        <button class="clear-btn" id="clearBtn">🗑️ Clear</button>
+        <button class="download-btn" id="downloadBtn" disabled>
+          💾 Download
+        </button>
+      </div>
+
+      <div class="stats">
+        <strong
+          >Strokes: <span id="strokeCount">0</span> | Points:
+          <span id="pointCount">0</span></strong
+        >
+      </div>
+    </div>
+
+    <script>
+      class iPadHandwritingCapture {
+        constructor() {
+          this.canvas = document.getElementById("drawCanvas");
+          this.ctx = this.canvas.getContext("2d");
+          this.isRecording = false;
+          this.isDrawing = false;
+          this.strokes = [];
+          this.currentStroke = null;
+          this.startTime = null;
+
+          this.initCanvas();
+          this.setupEvents();
+
+          console.log("iPad Handwriting Capture initialized!");
+        }
+
+        initCanvas() {
+          // Set canvas size explicitly
+          this.canvas.width = 800;
+          this.canvas.height = 400;
+
+          // Set drawing style
+          this.ctx.lineCap = "round";
+          this.ctx.lineJoin = "round";
+          this.ctx.strokeStyle = "#000";
+          this.ctx.lineWidth = 3;
+
+          this.clearCanvas();
+          console.log(
+            "Canvas initialized:",
+            this.canvas.width,
+            "x",
+            this.canvas.height
+          );
+        }
+
+        setupEvents() {
+          // Button events
+          document.getElementById("startBtn").onclick = () =>
+            this.startRecording();
+          document.getElementById("stopBtn").onclick = () =>
+            this.stopRecording();
+          document.getElementById("clearBtn").onclick = () => this.clearAll();
+          document.getElementById("downloadBtn").onclick = () =>
+            this.downloadData();
+
+          // Touch events for iPad
+          this.canvas.addEventListener(
+            "touchstart",
+            (e) => this.touchStart(e),
+            { passive: false }
+          );
+          this.canvas.addEventListener("touchmove", (e) => this.touchMove(e), {
+            passive: false,
+          });
+          this.canvas.addEventListener("touchend", (e) => this.touchEnd(e), {
+            passive: false,
+          });
+
+          // Mouse events for desktop testing
+          this.canvas.addEventListener("mousedown", (e) => this.mouseDown(e));
+          this.canvas.addEventListener("mousemove", (e) => this.mouseMove(e));
+          this.canvas.addEventListener("mouseup", () => this.mouseUp());
+
+          console.log("Events setup complete");
+        }
+
+        startRecording() {
+          this.isRecording = true;
+          this.startTime = Date.now();
+          this.strokes = [];
+
+          document.getElementById("startBtn").disabled = true;
+          document.getElementById("stopBtn").disabled = false;
+          document.getElementById("downloadBtn").disabled = true;
+
+          document.getElementById("status").textContent =
+            "🔴 RECORDING - Draw in the white box below!";
+          document.getElementById("status").className = "status recording";
+
+          this.updateStats();
+          console.log("Recording started!");
+        }
+
+        stopRecording() {
+          this.isRecording = false;
+
+          document.getElementById("startBtn").disabled = false;
+          document.getElementById("stopBtn").disabled = true;
+          document.getElementById("downloadBtn").disabled = false;
+
+          document.getElementById("status").textContent =
+            "✅ Recording complete! Click Download to save.";
+          document.getElementById("status").className = "status ready";
+
+          console.log(
+            "Recording stopped! Captured",
+            this.strokes.length,
+            "strokes"
+          );
+        }
+
+        clearAll() {
+          this.clearCanvas();
+          if (!this.isRecording) {
+            this.strokes = [];
+            this.updateStats();
+          }
+        }
+
+        clearCanvas() {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+          // Add subtle guideline
+          this.ctx.strokeStyle = "#f0f0f0";
+          this.ctx.lineWidth = 1;
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, this.canvas.height / 2);
+          this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
+          this.ctx.stroke();
+
+          // Reset drawing style
+          this.ctx.strokeStyle = "#000";
+          this.ctx.lineWidth = 3;
+        }
+
+        // Touch events for iPad
+        touchStart(e) {
+          e.preventDefault();
+          if (!this.isRecording) return;
+
+          const touch = e.touches[0];
+          const rect = this.canvas.getBoundingClientRect();
+          const x =
+            (touch.clientX - rect.left) * (this.canvas.width / rect.width);
+          const y =
+            (touch.clientY - rect.top) * (this.canvas.height / rect.height);
+
+          this.startStroke(x, y, touch.force || 0.5);
+          console.log("Touch start:", x, y);
+        }
+
+        touchMove(e) {
+          e.preventDefault();
+          if (!this.isRecording || !this.isDrawing) return;
+
+          const touch = e.touches[0];
+          const rect = this.canvas.getBoundingClientRect();
+          const x =
+            (touch.clientX - rect.left) * (this.canvas.width / rect.width);
+          const y =
+            (touch.clientY - rect.top) * (this.canvas.height / rect.height);
+
+          this.addPoint(x, y, touch.force || 0.5);
+          this.drawPoint(x, y);
+        }
+
+        touchEnd(e) {
+          e.preventDefault();
+          this.endStroke();
+        }
+
+        // Mouse events for desktop testing
+        mouseDown(e) {
+          if (!this.isRecording) return;
+          const rect = this.canvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+          const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+          this.startStroke(x, y, 0.5);
+        }
+
+        mouseMove(e) {
+          if (!this.isRecording || !this.isDrawing) return;
+          const rect = this.canvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+          const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+          this.addPoint(x, y, 0.5);
+          this.drawPoint(x, y);
+        }
+
+        mouseUp() {
+          this.endStroke();
+        }
+
+        startStroke(x, y, pressure) {
+          this.isDrawing = true;
+          this.currentStroke = {
+            points: [],
+            startTime: Date.now() - this.startTime,
+          };
+
+          this.addPoint(x, y, pressure);
+
+          // Start drawing
+          this.ctx.beginPath();
+          this.ctx.moveTo(x, y);
+
+          console.log("Started stroke at:", x, y);
+        }
+
+        addPoint(x, y, pressure) {
+          if (!this.currentStroke) return;
+
+          this.currentStroke.points.push({
+            x: Math.round(x),
+            y: Math.round(y),
+            pressure: pressure,
+            time: Date.now() - this.startTime,
+          });
+
+          this.updateStats();
+        }
+
+        drawPoint(x, y) {
+          this.ctx.lineTo(x, y);
+          this.ctx.stroke();
+        }
+
+        endStroke() {
+          if (!this.isDrawing) return;
+
+          this.isDrawing = false;
+
+          if (this.currentStroke && this.currentStroke.points.length > 0) {
+            this.currentStroke.endTime = Date.now() - this.startTime;
+            this.strokes.push(this.currentStroke);
+            console.log(
+              "Ended stroke with",
+              this.currentStroke.points.length,
+              "points"
+            );
+          }
+
+          this.currentStroke = null;
+          this.updateStats();
+        }
+
+        updateStats() {
+          const strokeCount = this.strokes.length + (this.isDrawing ? 1 : 0);
+          const pointCount =
+            this.strokes.reduce(
+              (sum, stroke) => sum + stroke.points.length,
+              0
+            ) + (this.currentStroke ? this.currentStroke.points.length : 0);
+
+          document.getElementById("strokeCount").textContent = strokeCount;
+          document.getElementById("pointCount").textContent = pointCount;
+        }
+
+        downloadData() {
+          if (this.strokes.length === 0) {
+            alert("No handwriting captured! Please record something first.");
+            return;
+          }
+
+          const data = {
+            metadata: {
+              captureDate: new Date().toISOString(),
+              canvasWidth: this.canvas.width,
+              canvasHeight: this.canvas.height,
+              totalStrokes: this.strokes.length,
+              totalPoints: this.strokes.reduce(
+                (sum, stroke) => sum + stroke.points.length,
+                0
+              ),
+              device: "iPad",
+            },
+            strokes: this.strokes,
+          };
+
+          const dataStr = JSON.stringify(data, null, 2);
+          const blob = new Blob([dataStr], { type: "application/json" });
+
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `hello_world_${new Date()
+            .toISOString()
+            .slice(0, 16)
+            .replace(/:/g, "-")}.json`;
+
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          alert(
+            "✅ Handwriting data saved! Keep this file for making the video."
+          );
+          console.log("Downloaded handwriting data:", data);
+        }
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new iPadHandwritingCapture();
+      });
+    </script>
+  </body>
+</html>
