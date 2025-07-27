@@ -9,7 +9,7 @@ for result in results:
     boxes = result.boxes
 
     for box in boxes:
-        # Get the coordinates in xyxy formate
+        # Get the coordinates in xyxy format
         x1, y1, x2, y2 = box.xyxy[0].int().tolist()
 
         confidence = box.conf[0].item()
@@ -17,3 +17,8 @@ for result in results:
 
         print(f"Coordinates: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
         print(f"Confidence: {confidence:.2f}, Class ID: {class_id}")
+        result.show()
+
+
+
+                
