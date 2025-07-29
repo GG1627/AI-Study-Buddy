@@ -28,7 +28,11 @@ logger = logging.getLogger(__name__)
 app = _fastapi.FastAPI()
 
 # configure redis connection
-redis_conn = Redis(host="localhost", port=6379, db=0)
+redis_url = os.getenv("REDIS_URL")
+if not redis_url:
+    raise ValueError("REDIS_URL environment variable is not set")
+
+redis_conn = Redis.from_url(redis_url, ssl=True, ssl_cert_reqs=None)
 queue = Queue(connection=redis_conn)
 
 

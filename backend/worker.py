@@ -4,12 +4,11 @@ from rq import Worker, Queue
 
 listen = ["default"]
 
-# connect to redis
-redis_conn = redis.Redis(
-    host='localhost',
-    port=6379,
-    db=0,
-)
+# connect to redis using REDIS_URL from environment variable
+redis_url = os.getenv("REDIS_URL")
+if not redis_url:
+    raise ValueError("REDIS_URL environment variable is not set")
+redis_conn = redis.from_url(redis_url, ssl=True, ssl_cert_reqs=None)
 
 if __name__ == "__main__":
     # Create queues
