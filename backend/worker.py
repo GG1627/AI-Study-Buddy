@@ -1,6 +1,6 @@
 import os
 import redis
-from rq import Worker, Queue, Connection
+from rq import Worker, Queue
 
 listen = ["default"]
 
@@ -12,6 +12,9 @@ redis_conn = redis.Redis(
 )
 
 if __name__ == "__main__":
-    with Connection(redis_conn):
-        worker = Worker(list(map(Queue, listen)))
-        worker.work()
+    # Create queues
+    queues = [Queue(name, connection=redis_conn) for name in listen]
+    
+    # Create and start worker
+    worker = Worker(queues, connection=redis_conn)
+    worker.work()
