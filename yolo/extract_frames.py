@@ -7,7 +7,7 @@ from pathlib import Path
 def run(video_path=None):
     # Get absolute path from project root
     project_root = Path(__file__).parent.parent
-    frames_dir = project_root / "data" / "frames"
+    frames_dir = project_root / "data" / "temp_frames"
 
     print(f"📹 Processing video: {video_path}")
     print(f"🗂️ Clearing and creating frames directory: {frames_dir}")

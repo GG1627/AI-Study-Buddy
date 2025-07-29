@@ -11,8 +11,8 @@ def run():
     # Use absolute paths based on the project root
     project_root = Path(__file__).parent.parent
     model_path = project_root / "runs" / "detect" / "train" / "weights" / "best.pt"
-    frames_folder = project_root / "data" / "frames"
-    output_path = project_root / "yolo" / "frame_detections.json"
+    frames_folder = project_root / "data" / "temp_frames"
+    output_path = project_root / "data" / "temp_json" / "frame_detections.json"
 
     # load trained model
     model = YOLO(str(model_path))

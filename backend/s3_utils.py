@@ -13,6 +13,7 @@ s3_client = boto3.client(
     region_name=os.getenv("AWS_REGION")
 )
 
+# helper function to download a file from S3
 def download_from_s3(file_key: str, local_path: str):
     bucket_name = os.getenv("S3_BUCKET_NAME")
 

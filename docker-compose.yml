@@ -1,4 +1,11 @@
+version: "3.8"
 services:
+  redis:
+    image: redis:7
+    container_name: surgitrack-redis
+    ports:
+      - "6379:6379"
+
   backend:
     build:
       context: ./backend

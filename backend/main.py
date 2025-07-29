@@ -14,6 +14,8 @@ import os
 import cv2
 from dotenv import load_dotenv
 from backend.s3_utils import download_from_s3
+from rq import Queue
+from redis import Redis
 
 # load environment variables
 load_dotenv()
@@ -24,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 # set up FastAPI app
 app = _fastapi.FastAPI()
+
+# configure redis connection
+redis_conn = Redis(host="localhost", port=6379, db=0)
+queue = Queue(connection=redis_conn)
 
 
 """
@@ -75,47 +81,28 @@ async def extract_frames():
 
 @app.post("/process")
 async def process_video(file_key: str):
-    temp_video_path = None
-    try:
-        logger.info(f"🚀 Starting video processing for file_key: {file_key}")
-
-        # Create the temp_videos directory if it doesn't exist
-        temp_videos_dir = Path("data/temp_videos")
-        temp_videos_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Define temp file path
-        temp_video_path = temp_videos_dir / file_key
-
-        # Download the video from S3
-        logger.info("📥 Downloading video from S3...")
-        download_from_s3(file_key, str(temp_video_path))
-        logger.info(f"✅ Successfully downloaded video to: {temp_video_path}")
-
-        # Call the pipeline
-        logger.info("🎬 Extracting frames...")
-        ef_module.run(str(temp_video_path))
-        logger.info("✅ Frame extraction completed")
-        
-        logger.info("🤖 Running object detection...")
-        df_module.run()
-        logger.info("✅ Object detection completed")
-        
-        logger.info("📊 Tracking objects...")
-        results = track_object.run()
-        logger.info(f"✅ Processing complete! Found {len(results)} events")
-
-        return {"events": results, "file_key": file_key}
+    # generate a unique job ID
+    job_id = str(uuid.uuid4())
     
-    except Exception as e:
-        logger.error(f"❌ Error processing video {file_key}: {e}")
-        raise _fastapi.HTTPException(status_code=500, detail=str(e))
+    # Enqueue the job instead of processing immediately
+    job = queue.enqueue("yolo.jobs.process_pipeline", file_key, job_id, job_id=job_id)
     
-    # Delete the temp video file
-    finally:
-        if temp_video_path and temp_video_path.exists():
-            logger.info(f"🗑️ Cleaning up temp file: {temp_video_path}")
-            temp_video_path.unlink()
+    logger.info(f"🚀 Enqueued video processing job {job_id} for file_key: {file_key}")
+    
+    return {"job_id": job_id, "status": "Job queued successfully"}
 
+@app.get("/job/{job_id}")
+async def get_job_status(job_id: str):
+    job = queue.fetch_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return {
+        "job_id": job_id,
+        "status": job.get_status(),
+        "result": job.result if job.is_finished else None,
+        "error": str(job.exc_info) if job.is_failed else None
+    }
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):

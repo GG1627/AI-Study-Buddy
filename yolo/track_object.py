@@ -5,7 +5,7 @@ from pathlib import Path
 def run():
      # Use absolute path
     project_root = Path(__file__).parent.parent
-    json_path = project_root / "yolo" / "frame_detections.json"
+    json_path = project_root / "data" / "temp_json" / "frame_detections.json"
 
      # Check if detections file exists
     if not json_path.exists():
