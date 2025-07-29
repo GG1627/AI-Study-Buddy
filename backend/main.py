@@ -9,7 +9,7 @@ import asyncio
 import logging
 import boto3
 import uuid
-import sys
+import ssl
 import os
 import cv2
 from dotenv import load_dotenv
@@ -32,7 +32,7 @@ redis_url = os.getenv("REDIS_URL")
 if not redis_url:
     raise ValueError("REDIS_URL environment variable is not set")
 
-redis_conn = Redis.from_url(redis_url, ssl=True, ssl_cert_reqs=None)
+redis_conn = Redis.from_url(redis_url, ssl_cert_reqs=ssl.CERT_NONE)
 queue = Queue(connection=redis_conn)
 
 
