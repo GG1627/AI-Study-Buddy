@@ -30,6 +30,6 @@ dependencies = [
     "ultralytics>=8.3.169",
     "roboflow>=1.2.2",
     "boto3>=1.39.15",
-    "redis>=6.2.0",
+    "redis==4.5.5",
     "rq>=2.4.1",
 ]

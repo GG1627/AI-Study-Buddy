@@ -9,7 +9,7 @@ listen = ["default"]
 redis_url = os.getenv("REDIS_URL")
 if not redis_url:
     raise ValueError("REDIS_URL environment variable is not set")
-redis_conn = redis.from_url(redis_url, ssl_cert_reqs=ssl.CERT_NONE)
+redis_conn = redis.from_url(redis_url)
 
 if __name__ == "__main__":
     # Create queues
