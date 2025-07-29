@@ -32,4 +32,5 @@ dependencies = [
     "boto3>=1.39.15",
     "redis==4.5.5",
     "rq>=2.4.1",
+    "upstash-redis>=0.15.0",
 ]
