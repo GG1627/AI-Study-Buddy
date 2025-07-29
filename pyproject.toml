@@ -29,4 +29,5 @@ dependencies = [
     "matplotlib>=3.10.3",
     "ultralytics>=8.3.169",
     "roboflow>=1.2.2",
+    "boto3>=1.39.15",
 ]

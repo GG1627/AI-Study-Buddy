@@ -7,67 +7,75 @@ import json
 # Declare the YOLO model
 # model = YOLO("yolo11n.pt")
 
-# load trained model
-model = YOLO("../runs/detect/train/weights/best.pt")
-# results = model("../data/frames/frame_0.jpg")
+def run():
+    # Use absolute paths based on the project root
+    project_root = Path(__file__).parent.parent
+    model_path = project_root / "runs" / "detect" / "train" / "weights" / "best.pt"
+    frames_folder = project_root / "data" / "frames"
+    output_path = project_root / "yolo" / "frame_detections.json"
 
-# declare frames folder path
-frames_folder = Path("../data/frames")
+    # load trained model
+    model = YOLO(str(model_path))
 
-# output JSON dictionary
-detection_data = {}
+    # Check if frames directory exists and has files
+    if not frames_folder.exists() or not any(frames_folder.iterdir()):
+        raise Exception(f"❌ No frames found in: {frames_folder}")
 
-CLASS_NAMES = {0: "cup", 1: "tray"}
+    # output JSON dictionary
+    detection_data = {}
 
-# numberic sorting helper
-def numeric_key(path):
-    match = re.search(r"(\d+)", path.stem)
-    return int(match.group(1)) if match else -1
+    CLASS_NAMES = {0: "cup", 1: "tray"}
 
-# Sort frame files numerically
-frame_files = sorted([f for f in frames_folder.iterdir() if f.is_file()], key=numeric_key)
+    # numberic sorting helper
+    def numeric_key(path):
+        match = re.search(r"(\d+)", path.stem)
+        return int(match.group(1)) if match else -1
 
-# loop through each frame in the frames folder
-for item in frame_files:
-    if item.is_file():
-        # Send each frame to the trained YOLO model
-        results = model(item)
+    # Sort frame files numerically
+    frame_files = sorted([f for f in frames_folder.iterdir() if f.is_file()], key=numeric_key)
 
-        frame_detections = []
-        
-        
-        for result in results:
-            boxes = result.boxes
+    # loop through each frame in the frames folder
+    for item in frame_files:
+        if item.is_file():
+            # Send each frame to the trained YOLO model
+            results = model(str(item))
 
-            for box in boxes:
-                # Get the coordinates in xyxy format
-                x1, y1, x2, y2 = box.xyxy[0].int().tolist()
+            frame_detections = []
+            
+            for result in results:
+                boxes = result.boxes
 
-                confidence = float(box.conf[0].item())
-                class_id = int(box.cls[0].item())
+                for box in boxes:
+                    # Get the coordinates in xyxy format
+                    x1, y1, x2, y2 = box.xyxy[0].int().tolist()
 
-                detection = {
-                    "x1": x1,
-                    "y1": y1,
-                    "x2": x2,
-                    "y2": y2,
-                    "confidence": confidence,
-                    "class_id": class_id,
-                    "label": CLASS_NAMES.get(class_id, "unknown")
-                }
+                    confidence = float(box.conf[0].item())
+                    class_id = int(box.cls[0].item())
 
-                frame_detections.append(detection)
+                    detection = {
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                        "confidence": confidence,
+                        "class_id": class_id,
+                        "label": CLASS_NAMES.get(class_id, "unknown")
+                    }
 
-        detection_data[item.stem] = frame_detections
+                    frame_detections.append(detection)
 
+            detection_data[item.stem] = frame_detections
 
-    else:
-        print("No files found")
+        else:
+            print("No files found")
 
-with open("frame_detections.json", "w") as f:
-    json.dump(detection_data, f, indent=2)
+    # Ensure output directory exists
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-print("\n✅ All detections saved to 'frame_detections.json'")
+    with open(str(output_path), "w") as f:
+        json.dump(detection_data, f, indent=2)
+
+    print("\n✅ All detections saved to 'frame_detections.json'")
 
 
 

@@ -1,141 +1,195 @@
-# 🛠️ SurgiTrack: AI-Powered Tool Usage Tracking System
+# 🚀 SurgiTrack Full Backend Architecture Plan
 
-## 🧩 Overview
-
-**SurgiTrack** is an AI/ML-driven project that detects and tracks the usage of tools (e.g., surgical instruments) from a video feed. By using computer vision and deep learning, the system logs when a tool is picked up, used, and returned — then visualizes this data in a web-based timeline dashboard. Inspired by cleanroom and surgical settings like those at **Arthrex**, this project aims to show real-world applications of AI in medical device environments.
+This roadmap outlines the complete backend architecture to make your project scalable, efficient, and deployable.
 
 ---
 
-## 🎯 Key Features
+## 📦 1. File Upload and Storage (✔️ IN PROGRESS)
 
-- Detect and track multiple tools using video analysis
-- Log pickup and return timestamps for each tool
-- Store and serve tool usage data via an API
-- Visualize tool usage on an interactive frontend timeline
-- Modular, containerized architecture using Docker
+**Tech stack:**
 
----
+- FastAPI
+- AWS S3
+- Python `boto3`
+- UUID for unique file naming
 
-## 🧠 Technologies Used
+**Workflow:**
 
-| Component             | Technology                  | Purpose                          |
-| --------------------- | --------------------------- | -------------------------------- |
-| **Object Detection**  | Ultralytics YOLOv8 + OpenCV | Detect tools in video frames     |
-| **Video Processing**  | OpenCV                      | Frame-by-frame analysis          |
-| **Backend API**       | FastAPI                     | Serve and log detection events   |
-| **Database**          | PostgreSQL or SQLite        | Store tool usage data            |
-| **Frontend UI**       | React or Flask + Chart.js   | Visualize timeline of tool usage |
-| **Containerization**  | Docker + Docker Compose     | Isolate and deploy services      |
-| **ML Infrastructure** | PyTorch                     | Run YOLO model for inference     |
+- Accept `.mp4` uploads via `/upload` endpoint
+- Validate file type, size (<10MB), and frame rate (<60 FPS)
+- Upload to S3 bucket
+- Return `file_key` to frontend for further use
 
 ---
 
-## 🧭 Project Architecture
+## 📥 2. File Download and Preprocessing
+
+**Tech stack:**
+
+- S3 client (boto3)
+- OpenCV
+- Temp file handling via `data/temp_videos/`
+
+**Workflow:**
+
+- Add endpoint like `/process?file_key=...`
+- Download the video from S3 to a temp directory
+- Pass video path to:
+  - `extract_frames.run(video_path)`
+  - `detect_frames.run()`
+  - `track_object.run()`
+- Return `events` (pickup/placed-back) to frontend
 
 ---
 
-## ✅ Step-by-Step Implementation Plan
+## 🧠 3. YOLO Object Detection (✔️ DONE)
 
-### 1. 🔍 Project Scoping & Planning
+**Tech stack:**
 
-- Define list of tools you want to detect (e.g., scalpel, clamp, scissors)
-- Identify a sample video or create one (e.g., surgical tray or cleanroom)
-- Decide on initial UI features (timeline chart, tool logs, alerts)
+- YOLOv11 (Ultralytics)
+- Trained `.pt` model
+- Scripts: `detect_frames.py`, `track_object.py`
 
----
+**Workflow:**
 
-### 2. 🎥 Sample Video Collection
-
-- Source a clean, well-lit video where tools are clearly visible
-- Focus on top-down or front-facing angles of a tool tray
-- Keep it short (~1–2 minutes) to test inference speed and tracking
+- Run object detection per frame
+- Output bounding boxes in `frame_detections.json`
+- Track object events (e.g. "Cup picked up")
 
 ---
 
-### 3. 🧠 ML/AI Object Detection Setup
+## 🧠 4. Redis Job Queue (🔄 Optional, but Recommended)
 
-- Choose Ultralytics YOLOv8 for pre-trained or fine-tuned object detection
-- If needed, label a few frames using Roboflow or CVAT for custom tools
-- Test model locally to ensure tools are accurately detected
-- Create logic to identify **state changes**:
-  - Tool visible → at rest
-  - Tool disappears → picked up
-  - Tool reappears → returned
+**Tech stack:**
 
----
+- Redis (via Docker)
+- RQ (Redis Queue) or Celery
+- `redis-py` or `aioredis`
 
-### 4. 📦 Backend API Development
+**Use case:**
 
-- Use FastAPI to build endpoints like:
-  - `POST /log_event` — save tool usage data
-  - `GET /timeline` — return full usage history
-  - `GET /tool/{name}` — return history for one tool
-- Design a data schema for:
-  - Tool name/ID
-  - Timestamps of pickup and return
-  - Duration used
+- Async handling of long video processing
+- Offload jobs to background queue
+- Return `job_id` to frontend
+- Poll `/status?job_id=...` for updates
+- Call `/events?job_id=...` once done
 
 ---
 
-### 5. 🗃️ Database Integration
+## 📂 5. Suggested Project Structure
 
-- Use SQLite for prototyping or PostgreSQL for scaling
-- Tables:
-  - `tools`: tool metadata
-  - `events`: timestamped actions (picked up/returned)
-- Ensure timestamps are synced with video frame timestamps
-
----
-
-### 6. 💻 Frontend Timeline Visualization
-
-- Build UI using:
-  - **React + Chart.js or D3.js** _(more dynamic)_
-  - or **Flask + Jinja + Plotly** _(easier for full-stack Python)_
-- Display timeline:
-  - X-axis = time
-  - Y-axis = tools
-  - Bars = usage duration
-- Add filters: date range, tool name, longest usage, etc.
-
----
-
-### 7. 🐳 Dockerization & DevOps
-
-- Create Docker containers for:
-  - `video-processing-service` (YOLOv8 inference)
-  - `api-service` (FastAPI backend)
-  - `frontend-ui` (React or Flask)
-  - `db-service` (PostgreSQL)
-- Use Docker Compose to orchestrate everything
-- Add `README.md` and `.env` for easy deployment
+```
+SurgiTrack/
+│
+├── backend/
+│   ├── main.py
+│   ├── s3_utils.py
+│   ├── redis_queue.py   # optional
+│
+├── yolo/
+│   ├── detect_frames.py
+│   ├── extract_frames.py
+│   ├── track_object.py
+│   ├── __init__.py
+│
+├── data/
+│   ├── temp_videos/
+│   ├── frames/
+│   └── results/
+│
+├── uploads/
+├── runs/
+├── docker-compose.yml
+```
 
 ---
 
-### 8. 🚀 Final Touches & Deployment
+## 🐳 6. Dockerization (⚙️)
 
-- Export logs as CSV for audits or compliance
-- Add alert system (e.g., "Tool left out > 10 minutes")
-- Optional: deploy to cloud (Render, Railway, or AWS EC2)
+**Tech stack:**
 
----
+- Docker
+- Docker Compose
 
-## 📌 Deliverables for Your Portfolio
+**Services:**
 
-- GitHub repo with:
-  - Clear README, architecture diagram, and tech summary
-  - Screenshots or GIFs of timeline UI
-  - Sample video results
-- Optional Devpost/Notion page with writeup
-- PDF one-pager for recruiters (focused on Arthrex use case)
+- `backend` → FastAPI app
+- `redis` → Background queue (optional)
+- `worker` → Job processor (optional)
+- Optional: Nginx reverse proxy
 
 ---
 
-## 🌟 Why This Project Matters (To Arthrex)
+## 🌍 7. Frontend Integration (🔁)
 
-- Shows real-world application of AI in surgical environments
-- Bridges software engineering + computer vision
-- Demonstrates technical depth _and_ awareness of medical manufacturing needs
-- Communicates well-rounded engineering skills (ML, full-stack, DevOps)
+**Tech stack:**
+
+- React / Next.js
+- `axios` or `fetch`
+
+**Endpoints to connect:**
+
+- `/upload` → Upload .mp4 file
+- `/process?file_key=...` → Trigger full processing pipeline
+- `/events` → Get final detection event timeline
+- Optional: `/status?job_id=...` if using Redis queue
 
 ---
+
+## 📊 8. Timeline Visualization (🧠)
+
+**Frontend logic:**
+
+- Use FPS + frame number to convert to timestamps
+- Display human-readable timeline:
+  ```
+  00:04 — Cup picked up
+  00:07 — Cup placed back
+  ```
+
+---
+
+## 🔐 9. Authentication (Optional for MVP)
+
+**Options:**
+
+- Auth0
+- Firebase Auth
+- FastAPI JWT-based system
+
+---
+
+## ☁️ 10. Deployment (🚀)
+
+**Options:**
+
+- Fly.io (good for full-stack Docker apps)
+- Render.com (easy CI/CD)
+- Railway (PostgreSQL + Redis + FastAPI supported)
+- AWS EC2 + Nginx + Docker
+- Cloudflare Pages (frontend hosting)
+
+---
+
+## 💰 11. Cost & Scaling Notes
+
+**S3 Free Tier:**
+
+- 5 GB standard storage
+- 20,000 GET and 2,000 PUT requests monthly (first 12 months)
+
+**Redis:**
+
+- Use local Redis in Docker for dev
+- Free tier options on Railway, Fly.io, Upstash
+
+---
+
+## ✅ Final Deliverable Goals
+
+- [ ] Fully working FastAPI backend with endpoints for upload, process, and events
+- [ ] Frontend UI for upload + timeline
+- [ ] S3 for storage
+- [ ] Redis queue (optional)
+- [ ] Dockerized for easy deploy
+- [ ] Resume-worthy + scalable design
