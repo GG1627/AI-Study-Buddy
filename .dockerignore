@@ -22,5 +22,3 @@ yolo/SurgiTrack-1/
 **/.env
 **/*.log
 
-# Database storage
-backend/chroma_langchain_db/
