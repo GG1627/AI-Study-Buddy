@@ -13,5 +13,5 @@ dependencies = [
     "upstash-redis>=1.4.0",
     "requests>=2.32.4",
     "pillow>=10.0.0",
-    "opencv-python>=4.8.0",
+    "opencv-python-headless>=4.8.0",
 ]
