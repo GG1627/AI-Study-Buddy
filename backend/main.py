@@ -15,7 +15,8 @@ import cv2
 from dotenv import load_dotenv
 from backend.s3_utils import download_from_s3
 from rq import Queue
-from redis import Redis
+from upstash_redis import Redis as UpstashRedis
+import json
 
 # load environment variables
 load_dotenv()
@@ -27,13 +28,39 @@ logger = logging.getLogger(__name__)
 # set up FastAPI app
 app = _fastapi.FastAPI()
 
-# configure redis connection
-redis_url = os.getenv("REDIS_URL")
-if not redis_url:
-    raise ValueError("REDIS_URL environment variable is not set")
+# configure redis connection using Upstash REST API
+upstash_url = os.getenv("UPSTASH_REDIS_REST_URL")
+upstash_token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
-redis_conn = Redis.from_url(redis_url)
-queue = Queue(connection=redis_conn)
+if not upstash_url or not upstash_token:
+    raise ValueError("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables are not set")
+
+# Create Upstash REST client
+upstash_redis = UpstashRedis(url=upstash_url, token=upstash_token)
+
+# Create a simple queue interface for RQ compatibility
+class SimpleQueue:
+    def __init__(self, redis_client):
+        self.redis = redis_client
+    
+    def enqueue(self, func_name, *args, **kwargs):
+        job_id = kwargs.get('job_id', str(uuid.uuid4()))
+        job_data = {
+            "func_name": func_name,
+            "args": args,
+            "kwargs": kwargs,
+            "job_id": job_id,
+            "status": "queued"
+        }
+        self.redis.lpush("job_queue", json.dumps(job_data))
+        return job_id
+    
+    def fetch_job(self, job_id):
+        # Simple job fetching - you might want to enhance this
+        return {"job_id": job_id, "status": "queued"}
+
+# Use the simple queue
+queue = SimpleQueue(upstash_redis)
 
 
 """

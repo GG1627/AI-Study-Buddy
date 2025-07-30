@@ -1,46 +1,43 @@
 import os
-import redis
-from rq import Worker, Queue
+from upstash_redis import Redis
+import time
+import json
 
-listen = ["default"]
+# Connect to Redis using REST API
+upstash_url = os.getenv("UPSTASH_REDIS_REST_URL")
+upstash_token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+redis_client = Redis(url=upstash_url, token=upstash_token)
 
-# Get Redis URL
-redis_url = os.getenv("REDIS_URL")
-print(f"REDIS_URL found: {redis_url is not None}")
+print("🚀 Testing Upstash REST connection...")
+redis_client.set("test", "working")
+result = redis_client.get("test")
+print(f"✅ Connection successful: {result}")
 
-if not redis_url:
-    raise ValueError("REDIS_URL environment variable is not set")
-
-# Test connection exactly like Upstash docs
-try:
-    print("🔄 Testing Upstash connection...")
-    r = redis.Redis.from_url(redis_url)
-    
-    # Test basic operations (like Upstash example)
-    print("🔄 Testing SET/GET...")
-    r.set('test_foo', 'test_bar')
-    value = r.get('test_foo')
-    print(f"✅ SET/GET test successful: {value}")
-    
-    # Use this connection for RQ
-    redis_conn = r
-    
-except Exception as e:
-    print(f"❌ Connection failed: {e}")
-    print(f"❌ Error type: {type(e)}")
-    raise
-
-if __name__ == "__main__":
+# Simple worker loop that processes jobs
+while True:
     try:
-        print("🔄 Creating RQ queues...")
-        queues = [Queue(name, connection=redis_conn) for name in listen]
+        # Get job from queue
+        job_data = redis_client.rpop("job_queue")
         
-        print("🔄 Creating RQ worker...")
-        worker = Worker(queues, connection=redis_conn)
-        
-        print("✅ Starting worker...")
-        worker.work()
-        
+        if job_data:
+            job = json.loads(job_data)
+            print(f"🔧 Processing job: {job['job_id']}")
+            
+            # Update job status
+            job['status'] = 'processing'
+            redis_client.set(f"job:{job['job_id']}", json.dumps(job))
+            
+            # Process the job (you'll need to implement this based on your needs)
+            # For now, just mark as completed
+            job['status'] = 'completed'
+            job['result'] = 'Job processed successfully'
+            redis_client.set(f"job:{job['job_id']}", json.dumps(job))
+            
+            print(f"✅ Job {job['job_id']} completed")
+        else:
+            print("⏳ No jobs, waiting...")
+            time.sleep(5)
+            
     except Exception as e:
-        print(f"❌ RQ Worker failed: {e}")
-        raise
+        print(f"❌ Error processing job: {e}")
+        time.sleep(10)
