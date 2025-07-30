@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y \
 # Install uv
 RUN pip install uv
 
-# Copy project files
-COPY pyproject.toml uv.lock ./
+# Copy project files from parent directory
+COPY ../pyproject.toml ../uv.lock ./
 
 # Remove any existing .venv directory and install dependencies
 RUN rm -rf .venv && uv sync --frozen
 
 # Copy the rest of the application
-COPY backend/ .
+COPY . .
 
 # Remove .venv again in case it was copied
 RUN rm -rf .venv
