@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from s3_utils import download_from_s3
 from upstash_redis import Redis as UpstashRedis
 import json
+import cv2
 
 # load environment variables
 load_dotenv()
