@@ -10,7 +10,7 @@ import boto3
 import uuid
 import os
 from dotenv import load_dotenv
-from backend.s3_utils import download_from_s3
+from s3_utils import download_from_s3
 from upstash_redis import Redis as UpstashRedis
 import json
 
