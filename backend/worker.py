@@ -1,12 +1,11 @@
 import os
-from upstash_redis import Redis
-import time
 import json
+import time
+import requests
+from upstash_redis import Redis
 
 # Connect to Redis using REST API
-upstash_url = os.getenv("UPSTASH_REDIS_REST_URL")
-upstash_token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
-redis_client = Redis(url=upstash_url, token=upstash_token)
+redis_client = Redis(url=os.getenv("UPSTASH_REDIS_REST_URL"), token=os.getenv("UPSTASH_REDIS_REST_TOKEN"))
 
 print("🚀 Testing Upstash REST connection...")
 redis_client.set("test", "working")
@@ -14,6 +13,7 @@ result = redis_client.get("test")
 print(f"✅ Connection successful: {result}")
 
 # Simple worker loop that processes jobs
+print("🔄 Starting worker loop...")
 while True:
     try:
         # Get job from queue
@@ -27,8 +27,8 @@ while True:
             job['status'] = 'processing'
             redis_client.set(f"job:{job['job_id']}", json.dumps(job))
             
-            # Process the job (you'll need to implement this based on your needs)
             # For now, just mark as completed
+            # Later you can add actual job processing logic
             job['status'] = 'completed'
             job['result'] = 'Job processed successfully'
             redis_client.set(f"job:{job['job_id']}", json.dumps(job))
