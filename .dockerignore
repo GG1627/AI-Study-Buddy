@@ -1,0 +1,26 @@
+# Git
+.git/
+
+# Python cache and virtual environments
+**/__pycache__/
+**/*.pyc
+**/.venv/
+
+# Node.js (frontend dependencies not needed for backend)
+frontend/node_modules/
+frontend/.next/
+
+# Large data directories not needed for backend API
+data/temp_frames/
+data/temp_videos/
+data/temp_json/
+runs/
+yolo/SurgiTrack-1/
+
+# Development files
+**/.DS_Store
+**/.env
+**/*.log
+
+# Database storage
+backend/chroma_langchain_db/

@@ -1,9 +1,0 @@
-.git/
-.venv/
-node_modules/
-.next/
-__pycache__/
-*.pyc
-.env
-.DS_Store
-backend/chroma_langchain_db/
