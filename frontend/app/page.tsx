@@ -124,13 +124,12 @@ export default function SurgiTrack() {
     try {
       updateStepStatus("extract", "processing");
 
-      const response = await fetch(`${API_URL}/process`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ file_key: fileKey }),
-      });
+      const response = await fetch(
+        `${API_URL}/process?file_key=${encodeURIComponent(fileKey)}`,
+        {
+          method: "POST",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Processing failed: ${response.status}`);
