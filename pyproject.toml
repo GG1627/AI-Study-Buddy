@@ -6,12 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116.0",
-    "numpy>=1.24.0",
-    "opencv-python>=4.8.0",
-    "openai>=1.94.0",
-    "pandas>=2.3.1",
     "pillow>=10.0.0",
-    "pypdf2>=3.0.1",
     "python-dotenv>=1.1.1",
     "python-multipart>=0.0.20",
     "requests>=2.32.4",
@@ -20,7 +15,5 @@ dependencies = [
     "ultralytics>=8.3.169",
     "roboflow>=1.2.2",
     "boto3>=1.39.15",
-    "redis==4.5.5",
-    "rq>=2.4.1",
     "upstash-redis>=0.15.0",
 ]
