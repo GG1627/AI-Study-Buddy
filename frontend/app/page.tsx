@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const API_URL = "https://ai-study-buddy-pnyu.onrender.com";
 
@@ -249,7 +249,8 @@ export default function SurgiTrack() {
             SurgiTrack
           </h1>
           <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            AI-Powered Surgical Tool Tracking System for Enhanced Operating Room Analytics
+            AI-Powered Surgical Tool Tracking System for Enhanced Operating Room
+            Analytics
           </p>
         </div>
 
@@ -265,7 +266,7 @@ export default function SurgiTrack() {
                   Select your surgical procedure video for AI analysis
                 </p>
               </div>
-              
+
               <div className="p-6 sm:p-8 space-y-6">
                 <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 bg-slate-50 hover:bg-slate-100 transition-colors">
                   <input
@@ -275,7 +276,7 @@ export default function SurgiTrack() {
                     className="block w-full text-sm text-slate-600 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-600 file:to-indigo-600 file:text-white hover:file:from-blue-700 hover:file:to-indigo-700 file:shadow-lg file:transition-all"
                   />
                 </div>
-                
+
                 {file && (
                   <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4">
                     <h3 className="font-semibold text-emerald-800 mb-3 flex items-center">
@@ -284,21 +285,27 @@ export default function SurgiTrack() {
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                       <div className="text-slate-700">
-                        <span className="font-medium text-slate-900">Name:</span>
+                        <span className="font-medium text-slate-900">
+                          Name:
+                        </span>
                         <p className="truncate">{file.name}</p>
                       </div>
                       <div className="text-slate-700">
-                        <span className="font-medium text-slate-900">Size:</span>
+                        <span className="font-medium text-slate-900">
+                          Size:
+                        </span>
                         <p>{formatFileSize(file.size)}</p>
                       </div>
                       <div className="text-slate-700">
-                        <span className="font-medium text-slate-900">Type:</span>
+                        <span className="font-medium text-slate-900">
+                          Type:
+                        </span>
                         <p>{file.type}</p>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <h3 className="font-semibold text-amber-800 mb-2 flex items-center">
                     <span className="mr-2">⚠️</span>
@@ -319,7 +326,7 @@ export default function SurgiTrack() {
                     </div>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleFileUpload}
                   disabled={!file || loading}
@@ -355,14 +362,14 @@ export default function SurgiTrack() {
                   AI analysis in progress - please wait
                 </p>
               </div>
-              
+
               <div className="p-6 sm:p-8">
                 <div className="grid gap-4 sm:gap-6">
                   {processingSteps.map((step, index) => {
                     const isActive = step.status === "processing";
                     const isCompleted = step.status === "completed";
                     const isError = step.status === "error";
-                    
+
                     return (
                       <div
                         key={step.id}
@@ -377,36 +384,56 @@ export default function SurgiTrack() {
                         }`}
                       >
                         <div className="flex items-center space-x-4 sm:space-x-6 w-full">
-                          <div className={`flex items-center justify-center w-12 h-12 rounded-full text-2xl ${
-                            isActive
-                              ? "bg-blue-100 border-2 border-blue-300"
-                              : isCompleted
-                              ? "bg-emerald-100 border-2 border-emerald-300"
-                              : isError
-                              ? "bg-red-100 border-2 border-red-300"
-                              : "bg-slate-100 border-2 border-slate-300"
-                          }`}>
+                          <div
+                            className={`flex items-center justify-center w-12 h-12 rounded-full text-2xl ${
+                              isActive
+                                ? "bg-blue-100 border-2 border-blue-300"
+                                : isCompleted
+                                ? "bg-emerald-100 border-2 border-emerald-300"
+                                : isError
+                                ? "bg-red-100 border-2 border-red-300"
+                                : "bg-slate-100 border-2 border-slate-300"
+                            }`}
+                          >
                             {getStepIcon(step.status)}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
-                            <h3 className={`font-semibold text-lg ${
-                              isActive ? "text-blue-900" : isCompleted ? "text-emerald-900" : isError ? "text-red-900" : "text-slate-700"
-                            }`}>
+                            <h3
+                              className={`font-semibold text-lg ${
+                                isActive
+                                  ? "text-blue-900"
+                                  : isCompleted
+                                  ? "text-emerald-900"
+                                  : isError
+                                  ? "text-red-900"
+                                  : "text-slate-700"
+                              }`}
+                            >
                               {step.name}
                             </h3>
-                            <p className={`text-sm mt-1 ${
-                              isActive ? "text-blue-700" : isCompleted ? "text-emerald-700" : isError ? "text-red-700" : "text-slate-600"
-                            }`}>
+                            <p
+                              className={`text-sm mt-1 ${
+                                isActive
+                                  ? "text-blue-700"
+                                  : isCompleted
+                                  ? "text-emerald-700"
+                                  : isError
+                                  ? "text-red-700"
+                                  : "text-slate-600"
+                              }`}
+                            >
                               {step.description}
                             </p>
                           </div>
-                          
+
                           <div className="flex items-center">
                             {step.status === "processing" && (
                               <div className="flex flex-col items-center space-y-2">
                                 <div className="animate-spin h-6 w-6 border-3 border-blue-500 border-t-transparent rounded-full"></div>
-                                <span className="text-xs text-blue-600 font-medium">Processing</span>
+                                <span className="text-xs text-blue-600 font-medium">
+                                  Processing
+                                </span>
                               </div>
                             )}
                             {step.status === "completed" && (
@@ -414,7 +441,9 @@ export default function SurgiTrack() {
                                 <div className="h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center">
                                   <span className="text-white text-sm">✓</span>
                                 </div>
-                                <span className="text-xs text-emerald-600 font-medium">Done</span>
+                                <span className="text-xs text-emerald-600 font-medium">
+                                  Done
+                                </span>
                               </div>
                             )}
                             {step.status === "error" && (
@@ -422,17 +451,23 @@ export default function SurgiTrack() {
                                 <div className="h-6 w-6 bg-red-500 rounded-full flex items-center justify-center">
                                   <span className="text-white text-sm">✕</span>
                                 </div>
-                                <span className="text-xs text-red-600 font-medium">Error</span>
+                                <span className="text-xs text-red-600 font-medium">
+                                  Error
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Progress line between steps */}
                         {index < processingSteps.length - 1 && (
-                          <div className={`absolute left-9 top-full w-0.5 h-4 ${
-                            processingSteps[index + 1].status === "completed" ? "bg-emerald-300" : "bg-slate-300"
-                          }`}></div>
+                          <div
+                            className={`absolute left-9 top-full w-0.5 h-4 ${
+                              processingSteps[index + 1].status === "completed"
+                                ? "bg-emerald-300"
+                                : "bg-slate-300"
+                            }`}
+                          ></div>
                         )}
                       </div>
                     );
@@ -456,13 +491,17 @@ export default function SurgiTrack() {
                   AI-detected surgical tool events with timestamps
                 </p>
               </div>
-              
+
               <div className="p-6 sm:p-8">
                 <div className="space-y-4">
                   {events.map((event, index) => {
-                    const isPickup = event.action.toLowerCase().includes("picked up");
-                    const isPlacement = event.action.toLowerCase().includes("placed back");
-                    
+                    const isPickup = event.action
+                      .toLowerCase()
+                      .includes("picked up");
+                    const isPlacement = event.action
+                      .toLowerCase()
+                      .includes("placed back");
+
                     return (
                       <div
                         key={index}
@@ -475,59 +514,79 @@ export default function SurgiTrack() {
                         }`}
                       >
                         <div className="flex items-center space-x-4 w-full sm:w-auto">
-                          <div className={`flex items-center justify-center w-16 h-16 rounded-full text-2xl border-2 ${
-                            isPickup
-                              ? "bg-blue-100 border-blue-300"
-                              : isPlacement
-                              ? "bg-emerald-100 border-emerald-300"
-                              : "bg-purple-100 border-purple-300"
-                          }`}>
+                          <div
+                            className={`flex items-center justify-center w-16 h-16 rounded-full text-2xl border-2 ${
+                              isPickup
+                                ? "bg-blue-100 border-blue-300"
+                                : isPlacement
+                                ? "bg-emerald-100 border-emerald-300"
+                                : "bg-purple-100 border-purple-300"
+                            }`}
+                          >
                             {isPickup ? "🔼" : isPlacement ? "🔽" : "🔄"}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                              <span className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-mono font-bold ${
-                                isPickup
-                                  ? "bg-blue-600 text-white"
-                                  : isPlacement
-                                  ? "bg-emerald-600 text-white"
-                                  : "bg-purple-600 text-white"
-                              }`}>
+                              <span
+                                className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-mono font-bold ${
+                                  isPickup
+                                    ? "bg-blue-600 text-white"
+                                    : isPlacement
+                                    ? "bg-emerald-600 text-white"
+                                    : "bg-purple-600 text-white"
+                                }`}
+                              >
                                 ⏱️ {event.timestamp}
                               </span>
-                              
+
                               <div className="flex-1">
-                                <h3 className={`text-lg font-semibold ${
-                                  isPickup ? "text-blue-900" : isPlacement ? "text-emerald-900" : "text-purple-900"
-                                }`}>
+                                <h3
+                                  className={`text-lg font-semibold ${
+                                    isPickup
+                                      ? "text-blue-900"
+                                      : isPlacement
+                                      ? "text-emerald-900"
+                                      : "text-purple-900"
+                                  }`}
+                                >
                                   {event.action}
                                 </h3>
-                                <p className={`text-sm ${
-                                  isPickup ? "text-blue-700" : isPlacement ? "text-emerald-700" : "text-purple-700"
-                                }`}>
+                                <p
+                                  className={`text-sm ${
+                                    isPickup
+                                      ? "text-blue-700"
+                                      : isPlacement
+                                      ? "text-emerald-700"
+                                      : "text-purple-700"
+                                  }`}
+                                >
                                   Detected at frame {event.frame}
                                 </p>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center mt-4 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
-                          <div className={`px-4 py-2 rounded-lg ${
-                            event.confidence >= 0.9
-                              ? "bg-emerald-100 text-emerald-800"
-                              : event.confidence >= 0.8
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-orange-100 text-orange-800"
-                          }`}>
-                            <div className="text-xs font-medium">Confidence</div>
+                          <div
+                            className={`px-4 py-2 rounded-lg ${
+                              event.confidence >= 0.9
+                                ? "bg-emerald-100 text-emerald-800"
+                                : event.confidence >= 0.8
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-orange-100 text-orange-800"
+                            }`}
+                          >
+                            <div className="text-xs font-medium">
+                              Confidence
+                            </div>
                             <div className="text-lg font-bold">
                               {Math.round(event.confidence * 100)}%
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Timeline connector */}
                         {index < events.length - 1 && (
                           <div className="absolute left-10 top-full w-0.5 h-4 bg-gradient-to-b from-slate-300 to-slate-200"></div>
@@ -536,28 +595,41 @@ export default function SurgiTrack() {
                     );
                   })}
                 </div>
-                
+
                 <div className="mt-8 pt-6 border-t border-slate-200">
                   <div className="text-center space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                       <div className="bg-slate-50 rounded-lg p-3">
-                        <div className="font-semibold text-slate-900">Total Events</div>
-                        <div className="text-2xl font-bold text-blue-600">{events.length}</div>
+                        <div className="font-semibold text-slate-900">
+                          Total Events
+                        </div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {events.length}
+                        </div>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-3">
-                        <div className="font-semibold text-slate-900">Duration</div>
+                        <div className="font-semibold text-slate-900">
+                          Duration
+                        </div>
                         <div className="text-2xl font-bold text-emerald-600">
                           {events[events.length - 1]?.timestamp || "N/A"}
                         </div>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-3">
-                        <div className="font-semibold text-slate-900">Avg Confidence</div>
+                        <div className="font-semibold text-slate-900">
+                          Avg Confidence
+                        </div>
                         <div className="text-2xl font-bold text-purple-600">
-                          {Math.round((events.reduce((sum, e) => sum + e.confidence, 0) / events.length) * 100)}%
+                          {Math.round(
+                            (events.reduce((sum, e) => sum + e.confidence, 0) /
+                              events.length) *
+                              100
+                          )}
+                          %
                         </div>
                       </div>
                     </div>
-                    
+
                     <button
                       onClick={resetProcess}
                       className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -585,12 +657,12 @@ export default function SurgiTrack() {
                   Something went wrong during video processing
                 </p>
               </div>
-              
+
               <div className="p-6 sm:p-8 text-center space-y-4">
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <p className="text-red-800 font-medium">{error}</p>
                 </div>
-                
+
                 <button
                   onClick={resetProcess}
                   className="px-8 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold rounded-xl hover:from-red-700 hover:to-pink-700 focus:ring-4 focus:ring-red-200 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -614,14 +686,20 @@ export default function SurgiTrack() {
               <div className="space-y-3 text-sm">
                 {fileKey && (
                   <div className="bg-white rounded-lg p-3 border border-slate-200">
-                    <span className="font-medium text-slate-900">File Key:</span>
-                    <p className="text-slate-700 font-mono text-xs mt-1 break-all">{fileKey}</p>
+                    <span className="font-medium text-slate-900">
+                      File Key:
+                    </span>
+                    <p className="text-slate-700 font-mono text-xs mt-1 break-all">
+                      {fileKey}
+                    </p>
                   </div>
                 )}
                 {jobId && (
                   <div className="bg-white rounded-lg p-3 border border-slate-200">
                     <span className="font-medium text-slate-900">Job ID:</span>
-                    <p className="text-slate-700 font-mono text-xs mt-1 break-all">{jobId}</p>
+                    <p className="text-slate-700 font-mono text-xs mt-1 break-all">
+                      {jobId}
+                    </p>
                   </div>
                 )}
               </div>
